@@ -1,2 +1,95 @@
-WHITESPACE = _{ " " | "\t" | "\n" | "\r" }
-number = @{ '0'..'9'+ }
+WHITESPACE = _{ " " | "\t" | NEWLINE }
+COMMENT = _{ ("//" ~ (!NEWLINE ~ ANY)* ~ NEWLINE) | "/*" ~ (!"*/" ~ ANY)* ~ "*/" }
+
+// Keywords
+keyword = @{ ("use" | "if" | "while" | "else" | "return" | "length" | "true" | "false") }
+
+// Identifiers
+identifier = @{ ASCII_ALPHA ~ (ASCII_ALPHA | ASCII_DIGIT | "_" | "'")* }
+
+// Literals
+int_lit = @{ "-"? ~ ASCII_NONZERO_DIGIT ~ ASCII_DIGIT* ~ !ASCII_ALPHA | "0" }
+bool_lit = @{ "true" | "false" }
+string_lit = @{ "\"" ~ (raw_str | esc_str)* ~ "\"" }
+raw_str = _{ (!("\\" | "\"" | "\n") ~ ANY)+ }
+
+esc_str = _{"\\" ~ (predef_esc | unicode)}
+
+predef_esc = _{ "\\" | "n" | "t" | "\"" | "'"}
+unicode = _{ "x{" ~ 
+  (
+    "0" ~ ASCII_HEX_DIGIT{5}
+    | "10" ~ ASCII_HEX_DIGIT{4} 
+    | ASCII_HEX_DIGIT{1,5} 
+  ) 
+~ "}" }
+
+char_lit = { "'" ~ ( !("\\" | "'") ~ ANY | esc_str ) ~ "'" }
+
+literal = { string_lit | char_lit | int_lit | bool_lit | identifier}
+
+// Symbols
+left_brack = { "[" }
+right_brack = { "]" }
+left_curly = { "{" }
+right_curly = { "}" }
+left_paren = { "(" }
+right_paren = { ")" }
+colon = { ":" }
+comma = { "," }
+semi = { ";" }
+underscore = { "_" }
+
+// Binary Operators 
+plus = { "+" }
+minus = { "-" }
+high_multiply = { "*>>" }
+times = { "*" }
+divide = { "/" }
+modulo = { "%" }
+and = { "&" }
+or = { "|" }
+geq = { ">=" }
+gt = { ">" }
+leq = { "<=" }
+lt = { "<" }
+eq = { "==" }
+neq = { "!=" }
+assign = { "=" }
+binary_op = {
+  | plus 
+  | minus 
+  | high_multiply 
+  | times 
+  | divide
+  | modulo 
+  | and 
+  | or 
+  | geq 
+  | gt 
+  | leq 
+  | lt 
+  | eq 
+  | neq 
+  | assign 
+}
+
+// Unary Operators
+not = { "!" }
+neg = { "-" }
+unary_op = { not | neg }
+
+// Function Call 
+argument = { expr } // You can expand this to include other types of expressions
+arguments = { argument ~ ("," ~ argument)* }
+function_call = { identifier ~ left_paren ~ (arguments)? ~ right_paren }
+len_expr = { "len" ~ left_paren ~ expr ~ right_paren } 
+
+// Expressions 
+expr = {
+  | len_expr
+  | function_call
+  | identifier
+  | unary_op? ~ literal ~ binary_op ~ unary_op? ~ literal
+  | unary_op? ~ literal 
+}
