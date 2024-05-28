@@ -83,13 +83,44 @@ unary_op = { not | neg }
 argument = { expr } // You can expand this to include other types of expressions
 arguments = { argument ~ ("," ~ argument)* }
 function_call = { identifier ~ left_paren ~ (arguments)? ~ right_paren }
-len_expr = { "len" ~ left_paren ~ expr ~ right_paren } 
+
+// Array Literals 
+expr_list = { ((expr ~ ("," ~ expr)* ~ ","?))? }
+array_lit = { left_curly ~ expr_list ~ right_curly }
+
+// Array Indexing 
+index = { expr }
+array_index = { identifier ~ left_brack ~ index ~ right_brack }
 
 // Expressions 
-expr = {
-  | len_expr
-  | function_call
+len_expr = { "len" ~ left_paren ~ expr ~ right_paren } 
+
+primary = {
+  | array_index
+  | len_expr 
+  | function_call 
+  | literal 
   | identifier
-  | unary_op? ~ literal ~ binary_op ~ unary_op? ~ literal
-  | unary_op? ~ literal 
+  | array_lit
 }
+
+binary_expr = { primary ~ binary_op ~ primary }
+unary_expr = { unary_op ~ primary }
+
+expr = {
+  | binary_expr 
+  | unary_expr 
+  | primary
+}
+
+// Types 
+int_type = { "int" }
+bool_type = { "bool" }
+char_type = { "char" }
+empty_bracket = { "[]" }
+sized_bracket = { "[" ~ expr ~ "]" }
+primitive_type = @{ int_type | bool_type | char_type }
+array_sized_type = { primitive_type ~ (sized_bracket+ ~ empty_bracket*) }
+array_unsized_type = { primitive_type ~ empty_bracket+ }
+array_type = { array_sized_type | array_unsized_type }
+type = { array_type | primitive_type }
