@@ -1,4 +1,9 @@
 use io; 
+use conv;
+
+int x = 2; 
+int y = 1 + 1; 
+int z = -5;
 
 void main(char[][] args) {
   println("Hello, World!");

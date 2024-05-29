@@ -8,24 +8,24 @@ pub enum Literal {
 
 #[derive(Debug)]
 pub struct ArrayIndex {
-    identifier: String,
-    index: Box<Expr>, // Needs to be an expression
+    pub identifier: String,
+    pub index: Box<Expr>, // Needs to be an expression
 }
 
 #[derive(Debug)]
 pub struct FunctionCall {
-    identifier: String,
-    arguments: Vec<Expr>, // Should be a vector of expressions
+    pub identifier: String,
+    pub arguments: Vec<Expr>, // Should be a vector of expressions
 }
 
 #[derive(Debug)]
 pub struct LengthExpression {
-    argument: Expr, // Should be an expression
+    pub argument: Expr, // Should be an expression
 }
 
 #[derive(Debug)]
 pub struct ArrayLiteral {
-    elements: Vec<Expr>, // Should be a vector of expressions
+    pub elements: Vec<Expr>, // Should be a vector of expressions
 }
 
 #[derive(Debug)]
@@ -46,8 +46,8 @@ pub enum Uop {
 
 #[derive(Debug)]
 pub struct UExpr {
-    operator: Uop,
-    operand: Box<Expr>,
+    pub operator: Uop,
+    pub operand: Box<Expr>,
 }
 
 #[derive(Debug)]
@@ -70,9 +70,9 @@ pub enum Bop {
 
 #[derive(Debug)]
 pub struct BExpr {
-    operator: Bop,
-    left: Box<Expr>,
-    right: Box<Expr>,
+    pub operator: Bop,
+    pub left: Box<Expr>,
+    pub right: Box<Expr>,
 }
 
 #[derive(Debug)]
@@ -84,8 +84,8 @@ pub enum Expr {
 
 #[derive(Debug)]
 pub struct AssignStmt {
-    identifier: String,
-    expression: Expr,
+    pub identifier: String,
+    pub expression: Expr,
 }
 
 #[derive(Debug)]
@@ -100,38 +100,38 @@ pub enum Type {
 
 #[derive(Debug)]
 pub struct Declaration {
-    decl_type: Type,
-    identifier: String,
-    expression: Option<Expr>,
+    pub decl_type: Type,
+    pub ids: Vec<String>,
+    pub exprs: Vec<Expr>,
 }
 
 #[derive(Debug)]
 pub struct Block {
-    statements: Vec<Statement>,
+    pub statements: Vec<Statement>,
 }
 
 #[derive(Debug)]
 pub struct IfStmt {
-    condition: Expr,
-    then_block: Block,
-    else_block: Option<Block>,
+    pub condition: Expr,
+    pub then_block: Block,
+    pub else_block: Option<Block>,
 }
 
 #[derive(Debug)]
 pub struct WhileStmt {
-    condition: Expr,
-    block: Block,
+    pub condition: Expr,
+    pub block: Block,
 }
 
 #[derive(Debug)]
 pub struct ReturnStmt {
-    expression: Option<Expr>,
+    pub expression: Option<Expr>,
 }
 
 #[derive(Debug)]
 pub struct ProcedureCall {
-    identifier: String,
-    arguments: Vec<Expr>,
+    pub identifier: String,
+    pub arguments: Vec<Expr>,
 }
 
 #[derive(Debug)]
@@ -147,27 +147,20 @@ pub enum Statement {
 
 #[derive(Debug)]
 pub struct Function {
-    return_type: Type,
-    identifier: String,
-    arguments: Vec<(Type, String)>,
-    block: Block,
-}
-
-#[derive(Debug)]
-pub struct GlobalDecl {
-    decl_type: Type,
-    identifier: String,
-    expression: Option<Expr>,
+    pub return_type: Type,
+    pub identifier: String,
+    pub arguments: Vec<(Type, String)>,
+    pub block: Block,
 }
 
 #[derive(Debug)]
 pub struct UseStmt {
-    identifier: String,
+    pub identifier: String,
 }
 
 #[derive(Debug)]
 pub struct Program {
-    pub global_declarations: Vec<GlobalDecl>,
+    pub global_declarations: Vec<Declaration>,
     pub functions: Vec<Function>,
     pub use_statements: Vec<UseStmt>,
 }
