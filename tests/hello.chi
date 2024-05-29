@@ -1,0 +1,5 @@
+use io; 
+
+void main(char[][] args) {
+  println("Hello, World!");
+}
