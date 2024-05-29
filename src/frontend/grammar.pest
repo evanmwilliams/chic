@@ -1,5 +1,5 @@
 WHITESPACE = _{ " " | "\t" | NEWLINE }
-COMMENT = _{ ("//" ~ (!NEWLINE ~ ANY)* ~ NEWLINE) | "/*" ~ (!"*/" ~ ANY)* ~ "*/" }
+COMMENT = _{ ("//" ~ (!NEWLINE ~ ANY)* ~ NEWLINE) | "/*" ~ (!"/" ~ ANY) ~ "*/" }
 
 // Keywords
 keyword = @{ ("use" | "if" | "while" | "else" | "return" | "length" | "true" | "false") }
@@ -124,20 +124,20 @@ primitive_type = @{ int_type | bool_type | char_type }
 array_sized_type = { primitive_type ~ (sized_bracket+ ~ empty_bracket*) }
 array_unsized_type = { primitive_type ~ empty_bracket+ }
 array_type = { array_sized_type | array_unsized_type }
-type = { array_type | primitive_type }
+decl_type = { array_type | primitive_type }
 
 // Statements 
 block = { left_curly ~ (statement)* ~ right_curly }
 if_stmt = { "if" ~ left_paren ~ expr ~ right_paren ~ block ~ ("else" ~ block)? }
 while_stmt = { "while" ~ left_paren ~ expr ~ right_paren ~ block }
-return_stmt = { "return" ~ expr? ~ semi }
-assign_stmt = { identifier ~ assign ~ expr ~ semi }
-decl_stmt = { type ~ identifier ~ (assign ~ expr)? ~ semi }
+return_stmt = { "return" ~ (expr ~ ("," ~ expr)*?)? ~ semi }
+assign_stmt = { identifier ~ ("," ~ identifier)*? ~ assign ~ expr ~ ("," ~ expr)*? ~ semi }
+decl_stmt = { decl_type ~ identifier ~ ("," ~ identifier)*? ~ (assign ~ expr ~("," ~ expr)*?)? ~ semi }
 procedure_call = { function_call ~ semi }
 statement = { if_stmt | while_stmt | return_stmt | assign_stmt | decl_stmt | procedure_call | block }
 
 // Function Declarations 
-function_decl = { (type | void_type) ~ identifier ~ left_paren ~ ((type ~ identifier) ~ (("," ~ (type ~ identifier)))*)? ~ right_paren ~ block }
+function_decl = { (decl_type ~ ("," ~ decl_type)*? | void_type) ~ identifier ~ left_paren ~ ((decl_type ~ identifier) ~ (("," ~ (decl_type ~ identifier)))*)? ~ right_paren ~ block }
 
 // Global Declarations 
 global_decl = { decl_stmt }
