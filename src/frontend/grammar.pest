@@ -2,10 +2,10 @@ WHITESPACE = _{ " " | "\t" | NEWLINE }
 COMMENT = _{ ("//" ~ (!NEWLINE ~ ANY)* ~ NEWLINE) | "/*" ~ (!"/" ~ ANY) ~ "*/" }
 
 // Keywords
-keyword = @{ ("use" | "if" | "while" | "else" | "return" | "length" | "true" | "false") }
+keyword = { "use" | "if" | "while" | "else" | "return" | "length" | "true" | "false" | "int" | "char" | "bool" }
 
 // Identifiers
-identifier = @{ ASCII_ALPHA ~ (ASCII_ALPHA | ASCII_DIGIT | "_" | "'")* }
+identifier = @{ (!keyword) ~ ASCII_ALPHA ~ (ASCII_ALPHA | ASCII_DIGIT | "_" | "'")* }
 
 // Literals
 int_lit = @{ "-"? ~ ASCII_NONZERO_DIGIT ~ ASCII_DIGIT* ~ !ASCII_ALPHA | "0" }
@@ -82,18 +82,18 @@ unary_op = { not | neg }
 // Function Call 
 argument = { expr } // You can expand this to include other types of expressions
 arguments = { argument ~ ("," ~ argument)* }
-function_call = { identifier ~ left_paren ~ (arguments)? ~ right_paren }
+function_call = { identifier ~ "(" ~ (arguments)? ~ ")" }
 
 // Array Literals 
 expr_list = { ((expr ~ ("," ~ expr)* ~ ","?))? }
-array_lit = { left_curly ~ expr_list ~ right_curly }
+array_lit = { "{" ~ expr_list ~ "}" }
 
 // Array Indexing 
 index = { expr }
-array_index = { identifier ~ left_brack ~ index ~ right_brack }
+array_index = { identifier ~ "[" ~ index ~ "]" }
 
 // Expressions 
-len_expr = { "len" ~ left_paren ~ expr ~ right_paren } 
+len_expr = { "len" ~ "(" ~ expr ~ ")" } 
 
 primary = {
   | array_index
@@ -104,9 +104,8 @@ primary = {
   | array_lit
 }
 
-binary_expr = { primary ~ binary_op ~ primary }
-unary_expr = { unary_op ~ primary }
-
+binary_expr = { primary ~ binary_op ~ expr }
+unary_expr = { unary_op ~ expr }
 expr = {
   | binary_expr 
   | unary_expr 
@@ -127,17 +126,21 @@ array_type = { array_sized_type | array_unsized_type }
 decl_type = { array_type | primitive_type }
 
 // Statements 
-block = { left_curly ~ (statement)* ~ right_curly }
-if_stmt = { "if" ~ left_paren ~ expr ~ right_paren ~ block ~ ("else" ~ block)? }
-while_stmt = { "while" ~ left_paren ~ expr ~ right_paren ~ block }
-return_stmt = { "return" ~ (expr ~ ("," ~ expr)*?)? ~ semi }
-assign_stmt = { identifier ~ ("," ~ identifier)*? ~ assign ~ expr ~ ("," ~ expr)*? ~ semi }
-decl_stmt = { decl_type ~ identifier ~ ("," ~ identifier)*? ~ (assign ~ expr ~("," ~ expr)*?)? ~ semi }
+block = { "{" ~ (statement)* ~ "}" }
+if_stmt = { "if" ~ (("(" ~ expr ~ ")") | expr) ~ block ~ ("else" ~ block)? }
+while_stmt = { "while" ~ (("(" ~ expr ~ ")") | expr) ~ block }
+return_stmt = { "return" ~ expr_list ~ semi }
+identifier_list = { identifier ~ ("," ~ identifier)*? }
+assign_stmt = { identifier_list ~ "=" ~ expr_list ~ semi }
+decl_stmt = { decl_type ~ identifier_list ~ "=" ~ expr_list ~ semi }
 procedure_call = { function_call ~ semi }
 statement = { if_stmt | while_stmt | return_stmt | assign_stmt | decl_stmt | procedure_call | block }
 
 // Function Declarations 
-function_decl = { (decl_type ~ ("," ~ decl_type)*? | void_type) ~ identifier ~ left_paren ~ ((decl_type ~ identifier) ~ (("," ~ (decl_type ~ identifier)))*)? ~ right_paren ~ block }
+type_list = { decl_type ~ ("," ~ decl_type)*? }
+return_type = { void_type | type_list }
+args = { ((decl_type ~ identifier) ~ (("," ~ (decl_type ~ identifier)))*)? }
+function_decl = { return_type ~ identifier ~ left_paren ~ args ~ right_paren ~ block }
 
 // Global Declarations 
 global_decl = { decl_stmt }

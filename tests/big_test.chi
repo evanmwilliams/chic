@@ -1,0 +1,33 @@
+use io; 
+use conv; 
+
+char[] hello = "hello";
+int x = 69; 
+bool flag = false; 
+
+void main(char[][] args)
+{
+  int num_args = len(args);
+  int count = 0; 
+  int count_plus = incr(x); 
+  set_flag();
+  int weird_expr = 420 + 69 * 420 / 69 + 420 *>> 69; 
+  println(str_of_int(weird_expr));
+  int x, y = incr(count), decr(count); 
+  int a, b, c = abc123();
+}
+
+int incr(int x)
+{
+  return x + 1; 
+}
+
+void set_flag()
+{
+  flag = true; 
+}
+
+int, int, int abc123()
+{
+  return 1, 2, 3;
+}
