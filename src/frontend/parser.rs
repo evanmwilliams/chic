@@ -35,11 +35,11 @@ impl ChiParser {
             }
         }
         let prog = ast::Program {
-            global_declarations: vec![],
+            global_declarations: global_decls,
             functions: vec![],
             use_statements: uses,
         };
-        // println!("{:?}", prog);
+        println!("{:?}", prog);
         Ok(prog)
     }
 
@@ -85,15 +85,16 @@ impl ChiParser {
         };
 
         for pair in inner.next().unwrap().into_inner() {
+
             match pair.as_rule() {
                 Rule::decl_type => {
                     //TODO MOVE decl_type FROM EARLIER TO HERE
                 }
-                Rule::identifier => ids.push(pair.as_str().to_string()),
-                Rule::expr => {
-                    let expr = Self::parse_expr(pair);
-                    println!("{:?}", expr);
-                    exprs.push(expr);
+                Rule::identifier_list => {
+                    ids = Self::parse_identifier_list(pair);
+                }
+                Rule::expr_list => {
+                    exprs = Self::parse_expr_list(pair);
                 }
                 Rule::semi | Rule::assign => {}
                 _ => {
@@ -125,6 +126,22 @@ impl ChiParser {
                 unreachable!()
             }
         }
+    }
+
+    fn parse_identifier_list(pair: pest::iterators::Pair<Rule>) -> Vec<String> {
+        let mut ids = vec![];
+        for inner in pair.into_inner() {
+            ids.push(inner.as_str().to_string());
+        }
+        ids
+    }
+
+    fn parse_expr_list(pair: pest::iterators::Pair<Rule>) -> Vec<ast::Expr> {
+        let mut exprs = vec![];
+        for inner in pair.into_inner() {
+            exprs.push(Self::parse_expr(inner));
+        }
+        exprs
     }
 
     fn parse_expr(pair: pest::iterators::Pair<Rule>) -> ast::Expr {
@@ -178,7 +195,7 @@ impl ChiParser {
                 unreachable!()
             }
         };
-        let rhs = Box::new(Self::parse_primary(inner.next().unwrap()));
+        let rhs = Box::new(Self::parse_expr(inner.next().unwrap()));
 
         ast::Expr::Binary(ast::BExpr {
             operator: op,
@@ -188,7 +205,21 @@ impl ChiParser {
     }
 
     fn parse_unary_expr(pair: pest::iterators::Pair<Rule>) -> ast::Expr {
-        todo!()
+
+        let mut inner = pair.into_inner();
+        let op_string = inner.next().unwrap().as_str();
+        let op = match op_string {
+            "-" => ast::Uop::Neg,
+            "!" => ast::Uop::Not,
+            _ => {
+                println!("Unreachable block in parse_unary_expr");
+                unreachable!()
+            }
+        };
+        // println!("{:?}", inner.clone().next().unwrap());
+        let operand = Box::new(Self::parse_expr(inner.next().unwrap()));
+        // println!("{:?}", operand);
+        ast::Expr::Unary(ast::UExpr { operator: op, operand })
     }
 
     fn parse_literal(pair: pest::iterators::Pair<Rule>) -> ast::Literal {
